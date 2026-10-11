@@ -1,0 +1,1 @@
+# grafopsicologia-stand
