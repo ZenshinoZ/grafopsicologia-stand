@@ -2,112 +2,255 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# Configuración de página optimizada para móviles
+# Configuración de página con título formal
 st.set_page_config(
-    page_title="Grafología Científica - Stand",
-    page_icon="✍️",
-    layout="centered"
+    page_title="UMG | Sistema Pericial Grafopsicológico",
+    page_icon="⚖️",
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
-# Estilo visual limpio y educativo
+# Estilos CSS de nivel pericial / institucional
 st.markdown("""
 <style>
-    .main-title { text-align: center; color: #1E3A8A; font-weight: 800; margin-bottom: 0px; }
-    .subtitle { text-align: center; color: #4B5563; font-size: 0.95rem; margin-bottom: 20px; }
-    .disclaimer { background-color: #F3F4F6; padding: 12px; border-radius: 8px; font-size: 0.85rem; color: #374151; margin-bottom: 20px; border-left: 4px solid #3B82F6; }
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    /* Cabecera Institucional */
+    .umg-header {
+        background: linear-gradient(135deg, #0A192F 0%, #172A45 50%, #0F172A 100%);
+        border: 1px solid #1E3A8A;
+        border-radius: 12px;
+        padding: 24px;
+        color: #F8FAFC;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 25px -5px rgba(2, 12, 27, 0.5);
+    }
+    
+    .umg-title {
+        font-family: 'Cinzel', serif;
+        font-size: 1.15rem;
+        letter-spacing: 2px;
+        color: #93C5FD;
+        margin: 0;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+    
+    .umg-faculty {
+        font-size: 0.95rem;
+        color: #E2E8F0;
+        margin: 6px 0 2px 0;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    .umg-course {
+        font-size: 0.85rem;
+        color: #38BDF8;
+        margin-bottom: 12px;
+        font-weight: 500;
+    }
+    
+    .umg-project {
+        display: inline-block;
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-radius: 9999px;
+        padding: 4px 16px;
+        font-size: 0.78rem;
+        color: #BAE6FD;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Panel Deontológico / Ético */
+    .ethical-card {
+        background: #F8FAFC;
+        border-left: 5px solid #1E3A8A;
+        border-radius: 6px;
+        padding: 14px 18px;
+        margin-bottom: 24px;
+        font-size: 0.83rem;
+        color: #334155;
+        line-height: 1.5;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    /* Botón de Acción Principal */
+    .stButton>button {
+        background: linear-gradient(135deg, #1E3A8A 0%, #0284C7 100%) !important;
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 14px 28px !important;
+        font-size: 1.05rem !important;
+        letter-spacing: 0.5px !important;
+        box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3) !important;
+        transition: all 0.25s ease !important;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.45) !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h2 class="main-title">🔬 Estudio Grafopsicológico</h2>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Feria Científica | Fundamentación en los 8 Géneros de Mauricio Xandró</p>', unsafe_allow_html=True)
-
+# Encabezado Institucional
 st.markdown("""
-<div class="disclaimer">
-    <strong>Aviso Metodológico y Ético:</strong> Este análisis constituye una aproximación proyectiva experimental basada en la grafonomía clásica de Mauricio Xandró. No representa un diagnóstico clínico, psicométrico ni de salud mental.
+<div class="umg-header">
+    <div class="umg-title">Universidad Mariano Gálvez de Guatemala</div>
+    <div class="umg-faculty">Licenciatura en Psicología Industrial</div>
+    <div class="umg-course">Cátedra: Introducción a la Psicología Forense</div>
+    <div class="umg-project">Laboratorio Pericial de Grafopsicología Científica | Método Mauricio Xandró</div>
 </div>
 """, unsafe_allow_html=True)
 
-# Clave de API desde Secrets o campo manual
+# Blindaje Deontológico visible para docentes y jurados
+st.markdown("""
+<div class="ethical-card">
+    <strong>⚖️ Marco Epistemológico y Deontológico:</strong><br>
+    Este sistema constituye una herramienta experimental de análisis proyectivo-morfoscópico fundamentada en la grafonomía estandarizada de <em>Mauricio Xandró</em>. 
+    Se apega al principio de objetividad grafológica: cada indicador actitudinal se deriva de variables medibles (presión, inclinación, continuidad, coligamento). 
+    No reemplaza un peritaje caligráfico forense de autenticidad documental ni una batería psicométrica estandarizada.
+</div>
+""", unsafe_allow_html=True)
+
+# Gestión de Credenciales
 api_key = st.secrets.get("GEMINI_API_KEY", None)
 
 if not api_key:
-    with st.expander("⚙️ Configuración de clave (solo si no está en Secrets)"):
-        api_key = st.text_input("Ingresa tu Gemini API Key:", type="password")
+    with st.expander("🔑 Credencial de Conexión"):
+        api_key = st.text_input("Ingrese la clave API de Gemini:", type="password")
 
-modo_captura = st.radio("Método de captura:", ["📷 Tomar foto con la cámara", "📁 Subir foto existente"], horizontal=True)
+# Interfaz de Entrada
+st.markdown("### 📄 Registro y Captura de la Muestra")
+st.caption("Consigna para la muestra: Nombre completo, fecha y firma/rúbrica en papel bond blanco liso sin renglones.")
 
-imagen_muestra = None
-if modo_captura == "📷 Tomar foto con la cámara":
-    imagen_muestra = st.camera_input("Enfoca la muestra (Nombre, fecha y firma en papel blanco)")
+tipo_captura = st.radio(
+    "Modalidad de ingreso:",
+    ["📷 Captura en directo con la cámara", "📁 Cargar archivo de imagen"],
+    horizontal=True
+)
+
+muestra_img = None
+if tipo_captura == "📷 Captura en directo con la cámara":
+    muestra_img = st.camera_input("Enfoque la muestra de forma perpendicular y con buena iluminación:")
 else:
-    imagen_muestra = st.file_uploader("Selecciona la imagen de la muestra:", type=["jpg", "jpeg", "png"])
+    muestra_img = st.file_uploader("Seleccione el archivo digitalizado (JPG / PNG):", type=["jpg", "jpeg", "png"])
 
-if imagen_muestra is not None:
-    img = Image.open(imagen_muestra)
-    st.image(img, caption="Muestra capturada", use_container_width=True)
+if muestra_img is not None:
+    imagen_pil = Image.open(muestra_img)
+    st.image(imagen_pil, caption="Muestra recibida para inspección grafonómica", use_container_width=True)
     
-    if st.button("🔍 Analizar Muestra Manuscrita", type="primary", use_container_width=True):
+    st.markdown("<br>", unsafe_allow_html=True)
+    ejecutar_analisis = st.button("⚖️ Emitir Dictamen Grafopsicológico Forense", use_container_width=True)
+    
+    if ejecutar_analisis:
         if not api_key:
-            st.error("Por favor ingresa una clave de API válida para continuar.")
+            st.error("No se ha configurado la clave API. Por favor añádala en los Secrets de Streamlit.")
         else:
-            with st.spinner("Analizando los 8 géneros gráficos y confrontando Yo Social vs. Yo Íntimo..."):
+            with st.spinner("Ejecutando medición morfoscópica, vectores de inclinación y dialéctica de Xandró..."):
                 try:
                     genai.configure(api_key=api_key)
                     
-                    # Detección automática del modelo disponible en tu cuenta
+                    # FILTRADO ESTRICTO: Solo modelos FLASH gratuitos (Nunca modelos Pro para evitar error 429)
                     modelos_disponibles = [
-                        m.name for m in genai.list_models() 
+                        m.name for m in genai.list_models()
                         if "generateContent" in m.supported_generation_methods
                     ]
                     
-                    # Seleccionar el mejor modelo Flash o Gemini compatible
-                    modelo_elegido = None
-                    for preferencia in ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-2.0-flash", "gemini-1.5-pro", "gemini-pro"]:
+                    # Prioridad exclusiva en variantes Flash
+                    candidatos_flash = [
+                        "gemini-1.5-flash",
+                        "gemini-1.5-flash-latest",
+                        "gemini-2.0-flash",
+                        "gemini-1.5-flash-8b",
+                        "gemini-1.5-flash-001"
+                    ]
+                    
+                    modelo_final = None
+                    for cand in candidatos_flash:
                         for m in modelos_disponibles:
-                            if preferencia in m:
-                                modelo_elegido = m
+                            if cand in m and "pro" not in m.lower():
+                                modelo_final = m
                                 break
-                        if modelo_elegido:
+                        if modelo_final:
                             break
                     
-                    if not modelo_elegido:
-                        modelo_elegido = modelos_disponibles[0] if modelos_disponibles else "models/gemini-1.5-flash"
-                    
-                    model = genai.GenerativeModel(modelo_elegido)
+                    # Fallback de seguridad estricto a Flash
+                    if not modelo_final:
+                        for m in modelos_disponibles:
+                            if "flash" in m.lower() and "pro" not in m.lower():
+                                modelo_final = m
+                                break
+                                
+                    if not modelo_final:
+                        modelo_final = "models/gemini-1.5-flash"
+
+                    model = genai.GenerativeModel(modelo_final)
                     
                     prompt_xandro = """
-                    Actúa como un perito grafopsicólogo y docente científico basándote estrictamente en el método y los 8 géneros gráficos de Mauricio Xandró.
-                    Analiza la imagen adjunta que contiene: Nombre (texto) y Firma/Rúbrica.
+                    Actúa como un Perito Grafopsicólogo Docente en el marco de la cátedra de Introducción a la Psicología Forense de la Universidad Mariano Gálvez de Guatemala.
+                    Tu análisis debe fundamentarse estrictamente en el método proyectivo y la morfología clásica de Mauricio Xandró.
 
-                    REGLAS OBLIGATORIAS:
-                    1. Cero esoterismo o efecto horóscopo (Efecto Forer). Cada rasgo de personalidad deducido DEBE citar el signo morfológico visible exacto (ej. "Inclinación a la derecha de aprox. 75°", "Tamaño inferior a 2mm en el óvalo de la 'a'").
-                    2. Enfoque constructivo, pedagógico y prudente.
-                    
-                    ESTRUCTURA DE RESPUESTA EN FORMATO MARKDOWN:
-                    
-                    ### 1. Ficha Técnica de los 8 Géneros Gráficos
-                    Para cada género, indica brevemente el rasgo visual observado y su correlato psicológico:
-                    - **Tamaño:** (Grande / Mediano / Pequeño) -> Observación y significado.
-                    - **Forma:** (Predominio Curvo / Predominio Anguloso) -> Observación y significado.
-                    - **Inclinación:** (Dextrógira / Vertical / Sinistrógira) -> Observación y significado.
-                    - **Dirección:** (Ascendente / Rectilínea / Descendente) -> Observación y significado.
-                    - **Presión:** (Firme / Nutricia / Leve) -> Observación del calibre/huella y significado.
-                    - **Velocidad:** (Rápida / Pausada / Mesurada) -> Observación en simplificaciones y significado.
-                    - **Continuidad:** (Ligada / Agrupada / Desligada) -> Enlaces interletra y significado.
-                    - **Orden:** (Distribución espacial, márgenes y claridad) -> Observación y significado.
+                    DOCUMENTO EN EVALUACIÓN: Muestra que contiene texto manuscrito espontáneo (nombre/datos) y firma/rúbrica.
 
-                    ### 2. Confrontación Proyectiva: "Yo Social" vs. "Yo Íntimo"
-                    - **El Texto (Yo Social):** Cómo se presenta el individuo en su rol público y académico/laboral.
-                    - **La Firma y Rúbrica (Yo Íntimo):** Autoimagen personal, defensas afectivas y esfera privada.
-                    - **Grado de Coherencia:** Compara si firma y texto coinciden o difieren en tamaño, inclinación y estilo, explicando qué revela esa relación.
+                    REGLAS DE MÁXIMO RIGOR CIENTÍFICO:
+                    1. PROHIBICIÓN TOTAL DEL EFECTO FORER (horóscopos, frases genéricas aplicables a cualquiera).
+                    2. CADA rasgo conductual deducido DEBE acompañarse de la evidencia visual observable exacta (ej.: "inclinación dextrógira de aproximadamente 80°", "hampas sobrealzadas", "óvalos cerrados en doble vuelta", "rúbrica envolvente envolviendo el nombre", "calibre de presión pastoso").
+                    3. Utiliza la terminología técnica de Xandró: grafonomía, tensión del trazo, coligamento, equilibrio trizonal (zona superior, media e inferior), ritmo y espontaneidad.
 
-                    ### 3. Síntesis y Conclusión Pedagógica
-                    Un párrafo resumen con las tendencias actitudinales dominantes observadas.
+                    ESTRUCTURA OBLIGATORIA DEL DICTAMEN EN FORMATO MARKDOWN:
+
+                    # ⚖️ DICTAMEN GRAFOPSICOLÓGICO FORENSE EXPERIMENTAL
+                    **Cátedra:** Introducción a la Psicología Forense | Licenciatura en Psicología Industrial (UMG)  
+                    **Metodología:** Sistema Grafonómico de Mauricio Xandró  
+
+                    ---
+
+                    ## I. MATRIZ DE LOS 8 GÉNEROS GRÁFICOS (XANDRÓ)
+                    Describe para cada género el signo morfológico visible y su significado grafopsicológico:
+                    1. **Tamaño:** (Micrografía / Mediana / Macrografía - Altura en mm del cuerpo medio. Significado: autoestimación, necesidad de reconocimiento o introversión).
+                    2. **Forma:** (Predominio de curvas, ángulos, simplificada o caligráfica. Significado: adaptabilidad, afabilidad, intransigencia o practicidad).
+                    3. **Inclinación:** (Dextrógira, vertical, sinistrógira o irregular - Grados estimados. Significado: sociabilidad y extraversión vs. autocontrol y repliegue).
+                    4. **Dirección de las Líneas:** (Ascendente, rectilínea horizontal, descendente, sinuosa. Significado: iniciativa, estabilidad del ánimo, fatiga o desánimo).
+                    5. **Presión:** (Firme, neta, ligera o pastosa. Significado: fuerza biológica, vitalidad, asertividad o hipersensibilidad).
+                    6. **Velocidad:** (Rápida, mesurada, precipitada o lenta. Significado: velocidad de procesamiento cognitivo y ritmo ejecutivo).
+                    7. **Continuidad / Coligamento:** (Ligada, agrupada o desligada. Significado: razonamiento lógico-deductivo vs. agilidad intuitiva).
+                    8. **Orden y Distribución Espacial:** (Claridad, márgenes, distribución de blancos. Significado: claridad mental, respeto a la jerarquía y estructura mental).
+
+                    ---
+
+                    ## II. ANÁLISIS DE SUBASPECTOS Y GESTOS TIPO
+                    - **Morfología de Óvalos (Zona Media):** (Abiertos, cerrados, cerrados con bucle. Significado: permeabilidad comunicativa, discreción o reserva).
+                    - **Prolongaciones Verticales:** (Desarrollo de hampas/intelecto vs. jambas/instinto-materialidad).
+                    - **Puntuación y Barras Auxiliares:** (Punto de la 'i' y travesaño de la 't': ubicación, altura y firmeza).
+
+                    ---
+
+                    ## III. DIALÉCTICA PROYECTIVA: "YO SOCIAL" vs. "Yo ÍNTIMO"
+                    *(Confrontación técnica entre el texto formal y la firma/rúbrica)*
+                    - **El Texto (El Yo Social):** Rol exterior, conducta académica/laboral y adaptación al medio social formal.
+                    - **La Firma y Rúbrica (El Yo Íntimo):** Autoimagen profunda, mecanismos de defensa afectiva y personalidad en la esfera privada.
+                    - **Grado de Coherencia Grafonómica:** Contrastar tamaño, inclinación y estilo entre ambos elementos. Señalar si existe autenticidad (coincidencia) o mecanismos de defensa/compensación (ej. firma desproporcionadamente mayor, rúbrica envolvente o tachadura).
+
+                    ---
+
+                    ## IV. SÍNTESIS INTEGRATIVA Y PERFIL ACTITUDINAL
+                    Presenta en dos párrafos concisos y de alto nivel pericial las fortalezas destacadas, las competencias de afrontamiento y las conclusiones finales sobre la muestra evaluada.
                     """
                     
-                    response = model.generate_content([prompt_xandro, img])
-                    st.success("¡Análisis completado con éxito!")
+                    response = model.generate_content([prompt_xandro, imagen_pil])
+                    st.success("✅ Dictamen pericial generado satisfactoriamente.")
                     st.markdown(response.text)
                     
                 except Exception as e:
-                    st.error(f"Error al procesar la imagen: {e}")
+                    st.error(f"Aviso técnico en el procesamiento: {e}")
