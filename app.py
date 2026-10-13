@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# Configuración institucional de la aplicación
+# Configuración institucional
 st.set_page_config(
     page_title="UMG | Laboratorio Pericial Grafopsicológico",
     page_icon="⚖️",
@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estética pericial de alta gama (compatible con modo oscuro y claro)
+# Estética pericial académica de alta gama
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -33,7 +33,7 @@ st.markdown("""
     .umg-title {
         font-family: 'Cinzel', serif;
         font-size: 1.15rem;
-        letter-spacing: 2.5px;
+        letter-spacing: 2px;
         color: #F8FAFC;
         margin: 0;
         text-transform: uppercase;
@@ -69,7 +69,7 @@ st.markdown("""
         letter-spacing: 1.2px;
     }
     
-    /* Panel de Resguardo Metodológico */
+    /* Resguardo Metodológico */
     .ethical-box {
         background: rgba(30, 41, 59, 0.4);
         border-left: 4px solid #D4AF37;
@@ -115,9 +115,9 @@ st.markdown("""
 st.markdown("""
 <div class="ethical-box">
     <strong>⚖️ Marco Deontológico y Epistemológico:</strong><br>
-    Sistema de demostración morfoscópica experimental fundamentado en la grafonomía analítica de <em>Mauricio Xandró</em>. 
-    Se evalúan estrictamente los 8 géneros gráficos y subaspectos gestuales observables. 
-    No reemplaza un peritaje grafotécnico documentológico ni una evaluación psicométrica diagnóstica clínica.
+    Sistema de análisis morfoscópico proyectivo experimental fundamentado en la grafonomía analítica de <em>Mauricio Xandró</em>. 
+    Se evalúan estrictamente los 8 géneros gráficos y la dialéctica entre el Yo Social y el Yo Íntimo. 
+    No sustituye un peritaje caligráfico forense documentológico ni una evaluación psicométrica clínica.
 </div>
 """, unsafe_allow_html=True)
 
@@ -125,12 +125,12 @@ st.markdown("""
 api_key = st.secrets.get("GEMINI_API_KEY", None)
 
 if not api_key:
-    with st.expander("🔑 Credenciales del Sistema"):
-        api_key = st.text_input("Ingrese la Gemini API Key:", type="password")
+    with st.expander("🔑 Credenciales de Conexión"):
+        api_key = st.text_input("Ingrese la clave API de Gemini:", type="password")
 
-# Selector de Captura
+# Selector de Entrada
 st.markdown("### 📋 Captura del Manuscrito")
-st.caption("Consigna de recolección: Hoja bond blanca lisa. Nombre manuscrito, fecha y firma/rúbrica con bolígrafo estándar.")
+st.caption("Consigna: Hoja bond blanca lisa. Nombre manuscrito, fecha y firma/rúbrica con bolígrafo estándar.")
 
 modo_captura = st.radio(
     "Fuente de entrada:",
@@ -142,22 +142,48 @@ muestra_img = None
 if modo_captura == "📷 Cámara del Dispositivo (Recomendado)":
     muestra_img = st.camera_input("Enfoque perpendicular a la muestra con luz homogénea:")
 else:
-    muestra_img = st.file_uploader("Subir imagen (JPG, JPEG, PNG):", type=["jpg", "jpeg", "png"])
+    muestra_img = st.file_uploader("Subir imagen de la muestra (JPG, JPEG, PNG):", type=["jpg", "jpeg", "png"])
 
 if muestra_img is not None:
     img_pil = Image.open(muestra_img)
-    st.image(img_pil, caption="Muestra documental ingresada al analizador", use_container_width=True)
+    st.image(img_pil, caption="Muestra documental recibida para inspección", use_container_width=True)
     
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("⚖️ Ejecutar Dictamen Pericial Grafopsicológico", use_container_width=True):
         if not api_key:
             st.error("No se detectó la clave de API en los Secrets de Streamlit.")
         else:
-            with st.spinner("Midiendo morfometría, inclinación axial, coligamento y dialéctica de Xandró..."):
+            with st.spinner("Inspeccionando morfometría, vectores axiales y dialéctica de Mauricio Xandró..."):
                 try:
                     genai.configure(api_key=api_key)
                     
-                    # Prompt técnico riguroso de la Escuela Española de Grafología
+                    # DETECCIÓN DINÁMICA DE MODELOS ACTIVOS EN LA CUENTA
+                    modelos_disponibles = []
+                    try:
+                        for m in genai.list_models():
+                            if "generateContent" in m.supported_generation_methods:
+                                modelos_disponibles.append(m.name)
+                    except Exception:
+                        pass
+                    
+                    # Selección del modelo Flash óptimo (sin usar jamás modelos Pro)
+                    modelo_final = None
+                    prioridades = ["flash-latest", "2.5-flash", "2.0-flash", "flash"]
+                    
+                    for p in prioridades:
+                        for m in modelos_disponibles:
+                            if p in m.lower() and "pro" not in m.lower():
+                                modelo_final = m
+                                break
+                        if modelo_final:
+                            break
+                    
+                    # Si la lista no devolvió nombres, usar el alias canónico seguro
+                    if not modelo_final:
+                        modelo_final = "gemini-flash-latest"
+
+                    model = genai.GenerativeModel(modelo_final)
+                    
                     prompt_xandro = """
                     Actúa como un Perito Grafopsicólogo y Catedrático especializado en la doctrina clásica de Mauricio Xandró, en el marco académico de la Universidad Mariano Gálvez de Guatemala (Psicología Forense y Psicología Industrial).
 
@@ -167,7 +193,7 @@ if muestra_img is not None:
                     1. PROHIBICIÓN DEL EFECTO FORER: Quedan vetadas afirmaciones vagas o tipo horóscopo. CADA rasgo conductual inferido DEBE sustentar su origen en un signo morfológico visible y medible (ej.: "inclinación dextrógira de aprox. 75°", "hampas sobrealzadas de 5 mm", "jambas reducidas", "óvalos cerrados en doble vuelta", "rúbrica envolvente", "presión apoyada/firme").
                     2. Utiliza la terminología técnica de Xandró: grafonomía, tensión del trazo, coligamento, equilibrio trizonal (zona superior, media e inferior), ritmo y espontaneidad.
 
-                    ESTRUCTURA OBLIGATORIA DEL DICTAMEN EN MARKDOWN:
+                    ESTRUCTURA OBLIGATORIA DEL DICTAMEN EN FORMATO MARKDOWN:
 
                     # ⚖️ DICTAMEN GRAFOPSICOLÓGICO FORENSE EXPERIMENTAL
                     **Institución:** Universidad Mariano Gálvez de Guatemala  
@@ -180,7 +206,7 @@ if muestra_img is not None:
                     Detalla minuciosamente para cada género el signo observado y su interpretación psicológica:
                     1. **Tamaño:** (Magnitud del cuerpo central en mm. Significado: autoestimación, expansión yoica, introversión o meticulosidad).
                     2. **Forma:** (Curva, ángulo, simplificada o caligráfica. Significado: empatía, ductilidad vs. combatividad, sentido práctico y firmeza).
-                    3. **Inclinación:** (Dextrógira, vertical, sinistrógira o invertida, grados estimados. Significado: orientación hacia los demás y el entorno vs. reserva, autocontrol y desconfianza).
+                    3. **Inclinación:** (Dextrógira, vertical, sinistrógira o irregular - Grados estimados. Significado: orientación hacia los demás y el entorno vs. reserva, autocontrol y desconfianza).
                     4. **Dirección:** (Horizontal, ascendente, descendente, sinuosa. Significado: estabilidad anímica, iniciativa de logro o fatiga temporal).
                     5. **Presión:** (Firme, neta, leve o pastosa. Significado: vitalidad biológica, asertividad, volumen energético o hipersensibilidad).
                     6. **Velocidad:** (Rápida, mesurada, precipitada o pausada. Significado: agilidad cognitiva, resolución práctica y ritmo laboral).
@@ -192,7 +218,7 @@ if muestra_img is not None:
                     ## II. ANÁLISIS DE SUBASPECTOS Y GESTOS TIPO
                     - **Morfología de Óvalos (Zona Media):** (Abiertos, cerrados, cegados. Significado: permeabilidad afectiva, discreción o hermetismo).
                     - **Desarrollo Trizonal:** (Zona Superior/intelecto vs. Zona Media/afectividad vs. Zona Inferior/instintos y practicidad).
-                    - **Gestos de Cohesión:** (Puntos sobre las 'i' y barras de la 't': altura, firmeza y adelanto).
+                    - **Gestos de Cohesión:** (Puntos sobre las 'i' y barras de la 't': ubicación, altura y firmeza).
 
                     ---
 
@@ -208,33 +234,9 @@ if muestra_img is not None:
                     Dos párrafos de síntesis pericial concluyendo las principales competencias conductuales, estilo de afrontamiento ante la presión y balance general de la muestra.
                     """
                     
-                    # MODELOS FLASH MODERNOS CON RESPALDO EN CASCADA
-                    # gemini-2.0-flash es el modelo oficial actual para cuentas nuevas
-                    modelos_prioritarios = [
-                        "gemini-2.0-flash",
-                        "gemini-2.0-flash-lite",
-                        "gemini-2.5-flash",
-                        "gemini-2.0-flash-exp"
-                    ]
+                    respuesta = model.generate_content([prompt_xandro, img_pil])
+                    st.success("✅ Dictamen pericial generado exitosamente bajo el método Mauricio Xandró.")
+                    st.markdown(respuesta.text)
                     
-                    respuesta_exitosa = None
-                    ultimo_error = None
-                    
-                    for nombre_modelo in modelos_prioritarios:
-                        try:
-                            modelo = genai.GenerativeModel(nombre_modelo)
-                            respuesta_exitosa = modelo.generate_content([prompt_xandro, img_pil])
-                            if respuesta_exitosa and respuesta_exitosa.text:
-                                break
-                        except Exception as e_intento:
-                            ultimo_error = e_intento
-                            continue
-                    
-                    if respuesta_exitosa and respuesta_exitosa.text:
-                        st.success("✅ Dictamen pericial generado exitosamente bajo el método Mauricio Xandró.")
-                        st.markdown(respuesta_exitosa.text)
-                    else:
-                        st.error(f"Aviso técnico al conectar con el motor pericial: {ultimo_error}")
-                        
-                except Exception as e_general:
-                    st.error(f"Error en el procesamiento: {e_general}")
+                except Exception as e:
+                    st.error(f"Aviso técnico en el procesamiento: {e}")
