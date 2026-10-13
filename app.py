@@ -5,7 +5,9 @@ import base64
 import io
 import random
 
-# Configuración institucional UMG
+# ==============================================================================
+# CONFIGURACIÓN INSTITUCIONAL UMG
+# ==============================================================================
 st.set_page_config(
     page_title="UMG | Laboratorio Grafopsicológico Forense",
     page_icon="⚖️",
@@ -20,7 +22,9 @@ if "analisis_listo" not in st.session_state:
     st.session_state.foto_muestra = None
     st.session_state.turno_id = 0
 
-# Estilos visuales institucionales
+# ==============================================================================
+# ESTILOS VISUALES INSTITUCIONALES (CSS)
+# ==============================================================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -108,12 +112,14 @@ st.markdown("""
 st.markdown("""
 <div class="ethical-box">
     <strong>⚖️ Finalidad Didáctica y Deontológica:</strong><br>
-    Práctica formativa experimental de grafonomía proyectiva basada en <em>Mauricio Xandró</em>. 
-    <strong>No constituye una evaluación psicométrica clínica ni diagnóstico de salud mental, ni sustituye el dictamen de un profesional colegiado.</strong>
+    Práctica formativa experimental de grafonomía proyectiva sustentada en el método de <em>Mauricio Xandró</em>. 
+    <strong>No constituye una evaluación psicométrica estandarizada, peritaje judicial vinculante ni diagnóstico de salud mental, ni sustituye el dictamen de un profesional colegiado.</strong>
 </div>
 """, unsafe_allow_html=True)
 
-# Gestión inteligente de API Keys (soporta clave única o lista de claves)
+# ==============================================================================
+# GESTIÓN INTELIGENTE DE CREDENCIALES (API KEYS)
+# ==============================================================================
 claves_cfg = st.secrets.get("GEMINI_API_KEYS", None)
 if not claves_cfg:
     clave_indiv = st.secrets.get("GEMINI_API_KEY", "")
@@ -129,8 +135,11 @@ if not lista_claves:
         if manual_key:
             lista_claves = [manual_key]
 
-# Optimización rápida de imagen
+# ==============================================================================
+# FUNCIONES AUXILIARES (OPTIMIZACIÓN Y REPORTE)
+# ==============================================================================
 def optimizar_imagen(img_entrada):
+    """Ajusta la resolución de forma óptima para transferencias inmediatas de 2 a 3 segundos."""
     if img_entrada.mode in ("RGBA", "P"):
         img_entrada = img_entrada.convert("RGB")
     img_opt = img_entrada.copy()
@@ -150,18 +159,18 @@ def formatear_markdown_a_html(texto_md):
         if not l_str:
             continue
         if l_str.startswith("# "):
-            bloques.append(f"<h2 style='color:#091E3A; border-bottom:2px solid #D4AF37; padding-bottom:4px; margin-top:12px; font-size:15px;'>{l_str[2:]}</h2>")
+            bloques.append(f"<h2 style='color:#091E3A; border-bottom:2px solid #D4AF37; padding-bottom:4px; margin-top:14px; font-size:16px;'>{l_str[2:]}</h2>")
         elif l_str.startswith("### "):
-            bloques.append(f"<h4 style='color:#0284C7; margin-top:8px; margin-bottom:3px; font-size:13px;'>{l_str[4:]}</h4>")
+            bloques.append(f"<h4 style='color:#0284C7; margin-top:10px; margin-bottom:4px; font-size:13px;'>{l_str[4:]}</h4>")
         elif l_str.startswith("- ") or l_str.startswith("* "):
             cuerpo = l_str[2:]
             partes = cuerpo.split("**")
             fmt = "".join([f"<strong>{p}</strong>" if i % 2 == 1 else p for i, p in enumerate(partes)])
-            bloques.append(f"<div style='margin-left:12px; margin-bottom:3px; font-size:11.5px;'>• {fmt}</div>")
+            bloques.append(f"<div style='margin-left:14px; margin-bottom:4px; font-size:12px;'>• {fmt}</div>")
         else:
             partes = l_str.split("**")
             fmt = "".join([f"<strong>{p}</strong>" if i % 2 == 1 else p for i, p in enumerate(partes)])
-            bloques.append(f"<p style='margin:3px 0; font-size:11.5px;'>{fmt}</p>")
+            bloques.append(f"<p style='margin:4px 0; font-size:12px;'>{fmt}</p>")
     return "\n".join(bloques)
 
 # ==============================================================================
@@ -179,26 +188,17 @@ if st.session_state.analisis_listo:
 
     if st.session_state.foto_muestra is not None:
         st.image(st.session_state.foto_muestra, caption="Muestra analizada en el stand", use_container_width=True)
-    
-    partes = st.session_state.resultado_texto.split("---EXPEDIENTE_TECNICO---")
-    perfil_estudiante = partes[0].strip()
-    expediente_pericial = partes[1].strip() if len(partes) > 1 else ""
 
-    # Nivel 1: Para el Estudiante (Visible)
-    st.markdown(perfil_estudiante)
+    # Mostrar directamente el perfil grafopsicológico anclado morfológicamente
+    st.markdown(st.session_state.resultado_texto)
 
-    # Nivel 2: Para la Docente (Acordeón)
-    if expediente_pericial:
-        st.markdown("<br>", unsafe_allow_html=True)
-        with st.expander("🔬 Ver Expediente Pericial y Morfometría (Exclusivo Docente / Jurado)", expanded=False):
-            st.markdown(expediente_pericial)
-
-    # Ficha Descargable Oficial
+    # Generación de la Ficha Descargable / Imprimible en PDF
     st.markdown("---")
-    st.markdown("### 🖨️ Ficha Digital Oficial")
-    
+    st.markdown("### 🖨️ Ficha Digital Oficial de la Feria")
+    st.caption("Descarga la ficha membretada oficial con la fotografía de tus trazos y tu dictamen pericial.")
+
     img_b64 = imagen_a_base64(st.session_state.foto_muestra) if st.session_state.foto_muestra else ""
-    cuerpo_html = formatear_markdown_a_html(perfil_estudiante)
+    cuerpo_html = formatear_markdown_a_html(st.session_state.resultado_texto)
 
     ficha_html = f"""
     <!DOCTYPE html>
@@ -207,30 +207,84 @@ if st.session_state.analisis_listo:
         <meta charset="UTF-8">
         <title>Ficha Grafopsicológica - UMG</title>
         <style>
-            body {{ font-family: 'Helvetica Neue', Arial, sans-serif; margin: 20px; color: #1e293b; line-height: 1.4; }}
-            .header {{ border-bottom: 2px solid #091E3A; padding-bottom: 8px; text-align: center; margin-bottom: 14px; }}
-            .header h1 {{ font-size: 15px; color: #091E3A; margin: 0; text-transform: uppercase; }}
-            .header h2 {{ font-size: 12px; color: #b45309; margin: 2px 0; }}
-            .photo-box {{ text-align: center; margin: 10px 0; background-color: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; }}
-            .photo-box img {{ max-width: 240px; max-height: 140px; border-radius: 4px; border: 1px solid #cbd5e1; }}
-            .disclaimer {{ margin-top: 18px; border: 1px solid #94a3b8; background-color: #f1f5f9; padding: 8px; border-radius: 6px; font-size: 10px; color: #475569; text-align: justify; }}
-            @media print {{ body {{ margin: 5px; }} }}
+            body {{
+                font-family: 'Helvetica Neue', Arial, sans-serif;
+                margin: 24px;
+                color: #1e293b;
+                line-height: 1.45;
+            }}
+            .header {{
+                border-bottom: 2px solid #091E3A;
+                padding-bottom: 10px;
+                text-align: center;
+                margin-bottom: 16px;
+            }}
+            .header h1 {{
+                font-size: 16px;
+                color: #091E3A;
+                margin: 0;
+                text-transform: uppercase;
+            }}
+            .header h2 {{
+                font-size: 13px;
+                color: #b45309;
+                margin: 3px 0;
+            }}
+            .header h3 {{
+                font-size: 11px;
+                color: #64748b;
+                margin: 0;
+            }}
+            .photo-box {{
+                text-align: center;
+                margin: 14px 0;
+                background-color: #f8fafc;
+                padding: 10px;
+                border-radius: 8px;
+                border: 1px solid #e2e8f0;
+            }}
+            .photo-box img {{
+                max-width: 250px;
+                max-height: 150px;
+                border-radius: 6px;
+                border: 1px solid #cbd5e1;
+            }}
+            .disclaimer {{
+                margin-top: 22px;
+                border: 1px solid #94a3b8;
+                background-color: #f1f5f9;
+                padding: 10px;
+                border-radius: 6px;
+                font-size: 10px;
+                color: #475569;
+                text-align: justify;
+            }}
+            @media print {{
+                body {{ margin: 10px; }}
+            }}
         </style>
     </head>
     <body>
         <div class="header">
             <h1>Universidad Mariano Gálvez de Guatemala</h1>
-            <h2>Licenciatura en Psicología Industrial | Psicología Forense</h2>
+            <h2>Licenciatura en Psicología Industrial | Introducción a la Psicología Forense</h2>
+            <h3>Laboratorio Pericial de Grafopsicología | Feria Científica Forense</h3>
         </div>
+
         <div class="photo-box">
-            <div style="font-size: 10px; color: #64748b; margin-bottom: 4px;">Muestra Manuscrita Evaluada:</div>
-            <img src="data:image/jpeg;base64,{img_b64}" alt="Muestra">
+            <div style="font-size: 11px; color: #64748b; margin-bottom: 6px;">Muestra Manuscrita Evaluada:</div>
+            <img src="data:image/jpeg;base64,{img_b64}" alt="Muestra Evaluada">
         </div>
+
         {cuerpo_html}
+
         <div class="disclaimer">
-            <strong>AVISO DIDÁCTICO:</strong> Ficha experimental generada en la Feria Forense UMG. Análisis basado en Mauricio Xandró. No representa diagnóstico clínico ni peritaje judicial.
+            <strong>AVISO LEGAL Y DEONTOLÓGICO:</strong> Esta ficha constituye el resultado de una práctica demostrativa y pedagógica realizada en el marco de la Feria Científica Forense de la Universidad Mariano Gálvez de Guatemala. El análisis se fundamenta en la grafonomía analítica de Mauricio Xandró. <strong>No representa un diagnóstico clínico, peritaje judicial vinculante ni evaluación psicométrica estandarizada, y no sustituye la opinión calificada de un profesional colegiado de la psicología.</strong>
         </div>
-        <script>window.onload = function() {{ window.print(); }}</script>
+        
+        <script>
+            window.onload = function() {{ window.print(); }}
+        </script>
     </body>
     </html>
     """
@@ -257,7 +311,12 @@ if st.session_state.analisis_listo:
 # ==============================================================================
 else:
     st.markdown("### 📋 Registro de la Muestra")
-    st.caption("Consigna: En un cuarto de hoja blanca, escribe una palabra, tu año de nacimiento y tu firma habitual.")
+    st.markdown("""
+    **Instrucciones para la persona evaluada (en un cuarto de hoja bond lisa):**
+    1. Responde en 1 o 2 renglones a la pregunta: *¿Qué es lo que más te motiva en tu vida o carrera?* (o escribe tu lema personal).
+    2. Anota abajo tu año de nacimiento.
+    3. Estampa tu firma y rúbrica habitual.
+    """)
 
     modo_captura = st.radio(
         "Fuente de entrada:",
@@ -268,12 +327,12 @@ else:
     muestra_img = None
     if modo_captura == "📷 Cámara del Dispositivo (Recomendado)":
         muestra_img = st.camera_input(
-            "Enfoque perpendicular con buena luz:",
+            "Enfoque perpendicular a 90° con buena iluminación:",
             key=f"cam_{st.session_state.turno_id}"
         )
     else:
         muestra_img = st.file_uploader(
-            "Seleccione la imagen:",
+            "Seleccione una fotografía clara:",
             type=["jpg", "jpeg", "png"],
             key=f"file_{st.session_state.turno_id}"
         )
@@ -281,84 +340,63 @@ else:
     if muestra_img is not None:
         img_original = Image.open(muestra_img)
         img_pil = optimizar_imagen(img_original)
-        st.image(img_pil, caption="Muestra lista para evaluación", use_container_width=True)
+        st.image(img_pil, caption="Muestra lista para evaluación pericial", use_container_width=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("✨ Descubrir Mi Perfil de Personalidad", type="primary", use_container_width=True):
+        if st.button("✨ Descubrir Mi Perfil Grafopsicológico", type="primary", use_container_width=True):
             if not lista_claves:
-                st.error("No se detectó ninguna clave de API configurada.")
+                st.error("No se detectó ninguna clave de API configurada en Secrets.")
             else:
-                with st.spinner("Analizando tus trazos bajo el método Xandró (Gemini 3.5 Flash Lite)..."):
-                    # Barajar claves para balancear tráfico si hay varias
+                with st.spinner("Analizando morfología gráfica bajo el método Mauricio Xandró..."):
                     claves_intento = list(lista_claves)
                     random.shuffle(claves_intento)
                     
                     respuesta_exitosa = None
                     ultimo_error = None
                     
+                    # PROMPT ANTI-HORÓSCOPO CON ANCLAJE MORFOSCÓPICO ESTRICTO
                     prompt_xandro = """
-                    Actúa como Especialista en Grafopsicología Forense de la Universidad Mariano Gálvez de Guatemala.
-                    Analiza la muestra manuscrita adjunta (palabra, año y firma/rúbrica) bajo la metodología clásica de Mauricio Xandró.
+                    Actúa como Perito en Grafopsicología Forense de la Universidad Mariano Gálvez de Guatemala.
+                    Evalúa la muestra manuscrita adjunta bajo la doctrina estricta de Mauricio Xandró y el simbolismo espacial de Max Pulver.
 
-                    IMPORTANTE: Sé directo, conciso y puntual. Evita párrafos largos; usa viñetas breves de 1 o 2 líneas.
-                    Divide tu respuesta obligatoriamente con este separador exacto:
-                    ---EXPEDIENTE_TECNICO---
+                    REGLA ESTRICTA ANTI-HORÓSCOPO (BLINDAJE CONTRA EL EFECTO FORER):
+                    QUEDA ROTUNDAMENTE PROHIBIDO emitir descripciones genéricas, adulaciones o frases ambiguas que apliquen a cualquiera.
+                    CADA AFIRMACIÓN PSICOLÓGICA DEBE ESTAR VINCULADA OBLIGATORIAMENTE A UN SIGNO FÍSICO VISIBLE EN LA FOTO.
+                    Fórmula obligatoria: [Signo visible medible] ➔ [Mecanismo psicológico] ➔ [Conducta real en el día a día].
+                    Sé directo, conciso, contundente y pericialmente exacto.
 
-                    SECCIÓN 1 (PERFIL FORMATIVO PARA EL ESTUDIANTE):
-                    En segunda persona ("Tú"). Claro, empático, honesto y sustentado en los trazos visibles:
-                    
-                    # 🌟 TU PERFIL CONDUCTUAL Y DE PERSONALIDAD
-                    *(Basado en la morfología de tu escritura | Escuela de Mauricio Xandró)*
+                    Estructura obligatoria de respuesta:
 
-                    ### 🧭 En Pocas Palabras
-                    (2 líneas sobre tu temperamento esencial y ritmo de acción).
+                    # 🌟 PERFIL CONDUCTUAL Y MORFOLÓGICO
+                    *(Laboratorio de Grafopsicología Forense UMG | Método Mauricio Xandró)*
 
-                    ### 🟢 Tus "Luces" (Fortalezas Destacadas)
-                    - **Fortaleza 1:** (1 línea sobre el rasgo y su origen morfológico).
-                    - **Fortaleza 2:** (1 línea sobre el rasgo y su origen morfológico).
-                    - **Fortaleza 3:** (1 línea sobre el rasgo y su origen morfológico).
+                    ### 🧭 Eje Temperamental Dominante
+                    (2 a 3 líneas donde definas su temperamento central vinculando el tamaño relativo de la letra, la presión y la velocidad del trazo con su ritmo de acción).
 
-                    ### 🟡 Tus "Sombras" (Puntos Ciegos y Retos)
-                    - **Reto 1:** (1 línea constructiva sobre un hábito a vigilar).
-                    - **Reto 2:** (1 línea constructiva sobre un hábito a vigilar).
+                    ### 🟢 Tus "Luces" (Fortalezas con Evidencia Gráfica)
+                    - **[Fortaleza 1]:** Comienza citando el signo exacto (ej. presión firme del trazo, barras de la 't' adelantadas, renglón ascendente, óvalos regulares) y explica la conducta concreta observable que genera.
+                    - **[Fortaleza 2]:** Comienza citando el signo exacto (ej. enlaces fluidos, hampas verticales y desarrolladas, márgenes ordenados) y explica la fortaleza conductual.
+                    - **[Fortaleza 3]:** Comienza citando el signo exacto (ej. simplificación caligráfica, coligamento continuo) y explica la fortaleza conductual.
 
-                    ### 👥 En lo Social y Académico (El "Yo Social" - Tu Palabra y Números)
-                    (3 líneas sobre tu proyección ante compañeros y docentes).
+                    ### 🟡 Tus "Sombras" (Retos Reales y Puntos Ciegos)
+                    - **[Punto Ciego 1]:** Comienza citando el rasgo morfológico que lo delata (ej. coligamento en ángulo, base rígida, óvalos con nudo cerrado, rúbrica envolvente o tachante) y explica la dificultad real (rigidez de criterio, hermetismo, desconfianza o susceptibilidad).
+                    - **[Punto Ciego 2]:** Comienza citando el signo gráfico y explica la conducta a vigilar bajo presión.
 
-                    ### 🔒 En tu Esfera Íntima (El "Yo Íntimo" - Tu Firma)
-                    (3 líneas sobre tu mundo privado y defensas bajo presión).
+                    ### 👥 Tu "Yo Social" (La Frase y Cifras Escritas)
+                    Evalúa la legibilidad, distancia entre palabras y dirección de línea en la frase y año. Explica cómo se comporta ante compañeros, docentes y figuras de autoridad en público.
 
-                    ### 💡 Consejo de Crecimiento
-                    (1 frase formativa para tu éxito estudiantil y profesional).
+                    ### 🔒 Tu "Yo Íntimo" (Tu Firma y Rúbrica)
+                    Confronta la firma con el texto: compara tamaño relativo, legibilidad y presencia de rúbrica. Explica su filtro para dar confianza, su autopercepción profunda y sus defensas cuando se siente vulnerable.
 
-                    ---EXPEDIENTE_TECNICO---
-
-                    SECCIÓN 2 (EXPEDIENTE PERICIAL PARA LA DOCENTE Y JURADO):
-                    # 📑 DICTAMEN GRAFONÓMICO PERICIAL
-                    **Cátedra:** Introducción a la Psicología Forense (UMG) | **Método:** Mauricio Xandró
-
-                    ### I. Matriz de los 8 Géneros Gráficos
-                    - **Tamaño:** (mm estimados del cuerpo medio y significado).
-                    - **Forma:** (Curva / ángulo / coligamento y significado).
-                    - **Inclinación:** (Grados del eje rector y apertura relacional).
-                    - **Dirección:** (Trayectoria del renglón y estabilidad anímica).
-                    - **Presión:** (Calibre/firmeza y potencial energético).
-                    - **Velocidad:** (Ritmo gráfico y agilidad cognitiva).
-                    - **Continuidad:** (Tipo de enlace y estilo de pensamiento).
-                    - **Orden:** (Claridad espacial y jerarquía mental).
-
-                    ### II. Dialéctica "Yo Social" vs. "Yo Íntimo"
-                    (Confrontación de legibilidad y proporciones entre palabra/cifras y la rúbrica).
-
-                    ### III. Conclusión Pericial Sintética
-                    (Juicio técnico breve sobre el balance y coherencia del trazo).
+                    ### 💡 Orientación de Crecimiento Conductual
+                    Un señalamiento formativo y constructivo sobre qué hábito actitudinal debe trabajar según las tensiones o frenos detectados en su trazo.
                     """
 
                     for key_actual in claves_intento:
                         try:
                             genai.configure(api_key=key_actual)
                             
-                            # Detección de modelos con prioridad absoluta a 3.5 Flash Lite y 3.1 Flash Lite (500 RPD / 15 RPM)
+                            # Prioridad a Flash Lite (500 consultas/día y 15/minuto)
                             modelos_disponibles = []
                             try:
                                 for m in genai.list_models():
@@ -368,7 +406,6 @@ else:
                                 pass
                             
                             modelo_final = None
-                            # Prioridades específicas de alta cuota (500 RPD)
                             prioridades = ["3.5-flash-lite", "3.1-flash-lite", "flash-lite", "2.5-flash-lite"]
                             for p in prioridades:
                                 for m in modelos_disponibles:
@@ -378,18 +415,17 @@ else:
                                 if modelo_final:
                                     break
                             
-                            # Si no lo encuentra por coincidencia exacta de lista, usa el identificador directo
                             if not modelo_final:
                                 modelo_final = "gemini-3.5-flash-lite"
                             
                             model = genai.GenerativeModel(modelo_final)
                             respuesta_exitosa = model.generate_content([prompt_xandro, img_pil])
-                            break # Éxito: salir del bucle
+                            break
                             
                         except Exception as e:
                             ultimo_error = e
                             if "429" in str(e):
-                                continue # Si una clave topa su minuto, prueba inmediatamente la siguiente
+                                continue
                             else:
                                 break
                     
