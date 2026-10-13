@@ -21,21 +21,19 @@ st.markdown("""
 st.markdown('<h2 class="main-title">🔬 Estudio Grafopsicológico</h2>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Feria Científica | Fundamentación en los 8 Géneros de Mauricio Xandró</p>', unsafe_allow_html=True)
 
-# Marco ético visible para jueces y visitantes
 st.markdown("""
 <div class="disclaimer">
     <strong>Aviso Metodológico y Ético:</strong> Este análisis constituye una aproximación proyectiva experimental basada en la grafonomía clásica de Mauricio Xandró. No representa un diagnóstico clínico, psicométrico ni de salud mental.
 </div>
 """, unsafe_allow_html=True)
 
-# Obtención de la API Key (desde los Secrets de Streamlit o campo manual)
+# Clave de API desde Secrets o campo manual
 api_key = st.secrets.get("GEMINI_API_KEY", None)
 
 if not api_key:
     with st.expander("⚙️ Configuración de clave (solo si no está en Secrets)"):
         api_key = st.text_input("Ingresa tu Gemini API Key:", type="password")
 
-# Selector de captura: Cámara en directo o subir foto
 modo_captura = st.radio("Método de captura:", ["📷 Tomar foto con la cámara", "📁 Subir foto existente"], horizontal=True)
 
 imagen_muestra = None
@@ -44,7 +42,6 @@ if modo_captura == "📷 Tomar foto con la cámara":
 else:
     imagen_muestra = st.file_uploader("Selecciona la imagen de la muestra:", type=["jpg", "jpeg", "png"])
 
-# Procesamiento del análisis
 if imagen_muestra is not None:
     img = Image.open(imagen_muestra)
     st.image(img, caption="Muestra capturada", use_container_width=True)
@@ -56,7 +53,27 @@ if imagen_muestra is not None:
             with st.spinner("Analizando los 8 géneros gráficos y confrontando Yo Social vs. Yo Íntimo..."):
                 try:
                     genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel("gemini-1.5-flash")
+                    
+                    # Detección automática del modelo disponible en tu cuenta
+                    modelos_disponibles = [
+                        m.name for m in genai.list_models() 
+                        if "generateContent" in m.supported_generation_methods
+                    ]
+                    
+                    # Seleccionar el mejor modelo Flash o Gemini compatible
+                    modelo_elegido = None
+                    for preferencia in ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-2.0-flash", "gemini-1.5-pro", "gemini-pro"]:
+                        for m in modelos_disponibles:
+                            if preferencia in m:
+                                modelo_elegido = m
+                                break
+                        if modelo_elegido:
+                            break
+                    
+                    if not modelo_elegido:
+                        modelo_elegido = modelos_disponibles[0] if modelos_disponibles else "models/gemini-1.5-flash"
+                    
+                    model = genai.GenerativeModel(modelo_elegido)
                     
                     prompt_xandro = """
                     Actúa como un perito grafopsicólogo y docente científico basándote estrictamente en el método y los 8 géneros gráficos de Mauricio Xandró.
